@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.johnpersano.supertoasts.SuperCardToast;
 import com.github.johnpersano.supertoasts.SuperToast;
 import com.github.johnpersano.supertoasts.util.Style;
@@ -31,6 +32,17 @@ public class MainActivity extends ActionBarActivity {
     private Button btnTwo;
     private AwesomeText lblIcon;
 
+    private TextView lblScore;
+    private AwesomeText lblLife1;
+    private AwesomeText lblLife2;
+    private AwesomeText lblLife3;
+
+
+    private int score;
+    private int lives;
+
+    private String finalString;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +52,12 @@ public class MainActivity extends ActionBarActivity {
         btnOne = (Button)findViewById(R.id.btnOne);
         btnTwo = (Button)findViewById(R.id.btnTwo);
         lblIcon = (AwesomeText)findViewById(R.id.lblIcon);
+
+        lblScore = (TextView)findViewById(R.id.lblScore);
+
+        lblLife1 = (AwesomeText)findViewById(R.id.lblLives1);
+        lblLife2 = (AwesomeText)findViewById(R.id.lblLives2);
+        lblLife3 = (AwesomeText)findViewById(R.id.lblLives3);
 
 
         allRecordModels = RecordModel.listAll(RecordModel.class);
@@ -62,6 +80,8 @@ public class MainActivity extends ActionBarActivity {
 
         }
 
+        score = 0;
+        lives = 3;
 
         generateQuestion();
 
@@ -89,7 +109,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void generateQuestion(){
 
-        int random = randomNumber(0,5);
+        int random = randomNumber(0,6);
 
         Log.d(LOG_TAG, "random number = " + random);
 
@@ -221,26 +241,90 @@ public class MainActivity extends ActionBarActivity {
             //picked one to be higher
 
             if (answer1 >= answer2){
-                SuperCardToast.create(MainActivity.this, "You were right!", SuperToast.Duration.LONG,
+
+                finalString = "You were right "+question.getOne().getName()+" has "+ answer1
+                        +" which is is more than "+answer2+" in " + question.getTwo().getName();
+
+                SuperCardToast.create(MainActivity.this,finalString, SuperToast.Duration.LONG,
                         Style.getStyle(Style.GREEN, SuperToast.Animations.FLYIN)).show();
+
+                wasRight();
             } else {
-                SuperCardToast.create(MainActivity.this, "You were wrong!", SuperToast.Duration.LONG,
+
+                finalString = "You were wrong "+question.getTwo().getName()+" has "+ answer2
+                        +" which is is more than "+answer1+" in " + question.getOne().getName();
+
+                SuperCardToast.create(MainActivity.this, finalString, SuperToast.Duration.LONG,
                         Style.getStyle(Style.RED, SuperToast.Animations.FLYIN)).show();
+                wasWrong();
             }
 
         } else {
 
             if (answer1 <= answer2){
-                SuperCardToast.create(MainActivity.this, "You were right!", SuperToast.Duration.LONG,
+
+                finalString = "You were right "+question.getTwo().getName()+" has "+ answer2
+                        +" which is is more than "+answer1+" in " + question.getOne().getName();
+
+                SuperCardToast.create(MainActivity.this, finalString, SuperToast.Duration.LONG,
                         Style.getStyle(Style.GREEN, SuperToast.Animations.FLYIN)).show();
+                wasRight();
             } else {
-                SuperCardToast.create(MainActivity.this, "You were wrong!", SuperToast.Duration.LONG,
+
+                finalString = "You were wrong!  "+question.getOne().getName()+" has "+ answer1
+                        +" which is is more than "+answer2+" in " + question.getTwo().getName();
+
+                SuperCardToast.create(MainActivity.this, finalString, SuperToast.Duration.LONG,
                         Style.getStyle(Style.RED, SuperToast.Animations.FLYIN)).show();
+                wasWrong();
             }
         }
 
         generateQuestion();
         displayQuestion();
+
+    }
+
+
+    private void wasRight(){
+        score ++;
+        //display score
+
+        lblScore.setText("Score = " + score);
+    }
+
+    private void wasWrong(){
+        lives --;
+
+        if (lives == 2){
+            lblLife3.setTextColor(getResources().getColor(R.color.md_red_600_disabled));
+        }
+
+        if (lives == 1){
+            lblLife2.setTextColor(getResources().getColor(R.color.md_red_600_disabled));
+        }
+
+
+        if (lives == 0){
+            //has lost
+            lblLife1.setTextColor(getResources().getColor(R.color.md_red_600_disabled));
+
+            String message = finalString + "\nYour score was : "+ score;
+
+            new MaterialDialog.Builder(this)
+                    .title("You lose :-(")
+                    .content(message)
+                    .positiveText("Ok")
+                    .callback(new MaterialDialog.ButtonCallback() {
+                        @Override
+                        public void onPositive(MaterialDialog dialog) {
+
+                        }
+                    })
+                    .show();
+
+        }
+
 
     }
 
